@@ -1,0 +1,32 @@
+{{- $data := .}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sitespeedio.fullname" $data }}
+  labels:
+    app: {{ include "sitespeedio.name" $data }}
+    chart: {{ include "sitespeedio.chart" $data }}
+    release: {{ $data.Release.Name }}
+spec:
+  replicas: {{ $data.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "sitespeedio.name" $data }}
+      release: {{ $data.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "sitespeedio.name" $data }}
+        release: {{ $data.Release.Name }}
+    spec:
+      containers:
+        - name: {{ $data.Chart.Name }}
+          image: "{{ $data.Values.image.repository }}:{{ $data.Values.image.tag }}"
+          imagePullPolicy: {{ $data.Values.image.pullPolicy }}
+          securityContext:
+            privileged: {{ $data.Values.securityContext.privileged }}
+          command: [ "/bin/bash", "-ce", "tail -f /dev/null" ]
+          resources:
+            {{- toYaml $data.Values.resources | nindent 12 }}
+      restartPolicy: Always

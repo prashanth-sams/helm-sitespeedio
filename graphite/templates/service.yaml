@@ -1,0 +1,25 @@
+{{- $data := .}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "graphite.fullname" $data }}
+  labels:
+    app: {{ include "graphite.name" $data }}
+    chart: {{ include "graphite.chart" $data }}
+    release: {{ $data.Release.Name }}
+    heritage: {{ $data.Release.Service }}
+spec:
+  type: {{ $data.Values.service.type }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ $data.Values.containerPort.http }}
+      targetPort: {{ $data.Values.service.port }}
+    - name: carbonreceiver
+      protocol: TCP
+      port: {{ $data.Values.containerPort.carbonreceiver }}
+      targetPort: {{ $data.Values.hostPort.carbonreceiver }}
+  selector:
+    app: {{ include "graphite.name" $data }}
+    release: {{ $data.Release.Name }}

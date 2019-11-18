@@ -1,0 +1,57 @@
+{{- $data := .}}
+---
+apiVersion: apps/v1
+kind: Deployment  
+metadata:
+  name: {{ include "graphite.fullname" $data }}
+  labels:
+    app: {{ include "graphite.name" $data }}
+    chart: {{ include "graphite.chart" $data }}
+    release: {{ $data.Release.Name }}
+    heritage: {{ $data.Release.Service }}
+spec:
+  replicas: {{ $data.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "graphite.name" $data }}
+      release: {{ $data.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "graphite.name" $data }}
+        release: {{ $data.Release.Name }}
+    spec:
+      containers:
+        - name: {{ $data.Chart.Name }}
+          image: "{{ $data.Values.image.repository }}:{{ $data.Values.image.tag }}"
+          imagePullPolicy: {{ $data.Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $data.Values.containerPort.http }}
+              hostPort: {{ $data.Values.hostPort.http }}
+              protocol: TCP
+            - name: carbonreceiver
+              containerPort: {{ $data.Values.containerPort.carbonreceiver }}
+              hostPort: {{ $data.Values.hostPort.carbonreceiver }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml $data.Values.resources | nindent 12 }}
+          env:
+            - name: GF_PASSWORD
+              value: {{ $data.Values.credentials.password }}
+            - name: GF_USER
+              value: {{ $data.Values.credentials.username }}
+          volumeMounts:
+            - mountPath: /opt/graphite/storage/whisper/
+              name: whisper-volume
+          securityContext:
+            privileged: true
+      restartPolicy: Always
+      volumes:
+        - name: whisper-volume
+          hostPath:
+            path: whisper
