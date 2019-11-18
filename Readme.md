@@ -1,13 +1,13 @@
 # Helm sitespeedio
 
-## Installation
+### **Installation**
 Create Helm release for `sitespeedio` and `graphite`
 ```
 helm install --name sitespeedio sitespeedio/ --namespace=sitespeed-io
 helm install --name graphite graphite/ --namespace=sitespeed-io
 ```
 
-## Notes
+### **Notes**
 replace `www.hackme.com` with your hostname in graphite `values.yaml`
 
 > ### More info.
